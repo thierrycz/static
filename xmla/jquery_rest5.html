@@ -1,0 +1,73 @@
+<html>
+<head>
+<title>jquery_rest5</title>
+<script src='/js/jquery-3.1.1.min.js'></script>
+</head>
+<body>
+<h1>req jQuery rest Atlas avec proxy</h1>
+<div></div><br>
+<p>ici</p>
+
+
+<script>
+
+// requête sur le proxy php softius ok ;
+// apès désactivation du controle des domaines
+
+
+	var authent = "holger_gov:holger_gov"
+	var proxyUrl = "http://fewh65.dgasi.pole-emploi.intra/xmla/proxy2.php";
+		
+	var atlasHost = "fw1808.dgasi.pole-emploi.intra:21000";
+	var atlasUrl = atlasHost + "/api/atlas/types?type=TRAIT";
+	    atlasUrl = atlasHost + "/api/atlas/discovery/search/dsl?";
+	var	atlasUrlmaj = atlasHost + "/api/atlas/discovery/search/dsl?";
+	var atlasEntities = atlasHost + "/api/atlas/entities";
+		//atlasUrl = "slzq0b.sii24.pole-emploi.intra:21000/api/atlas/discovery/search/dsl?";
+
+	// requête atlas avec un + a la place de l'espace et les quotes échappées
+	var atlasReq = { query: 'hive_table+name=\'sample_aa\'' } ;
+		atlasReq = { query: 'hive_column+qualifiedName=\'braff.xdpdpa_dpae.dc_nom@Sandbox\'' } ;
+
+	// paramètre pour l'appel au proxy avec l'authentification et la requête de recherche encodée.
+	var proxyParam = {
+						csurl: "http://" + authent + "@" + atlasUrl + $.param(atlasReq)
+					};
+	
+	console.log('proxyParam=' + proxyParam.csurl);
+	console.log('proxyUrl=' + proxyUrl);
+
+$(document).ready(function() {
+// soumet la requête au proxy php et recupère la réponse en cas de susccès
+
+$.getJSON( proxyUrl, proxyParam, function( resp ) {
+
+	console.log( 'count=' + resp.count);
+	console.log( 'query=' + resp.query);
+	console.log( 'requestId=' + resp.requestId);
+
+	// boucle sur les résultats de la requête
+	
+	for (iresult in resp.results) {
+		a = resp.results[iresult];
+		console.log("iresult=" + iresult);
+		console.log("a.name=" + a.name);
+		console.log("a.owner=" + a.owner);
+		// modification d'un objet retourné par la requête avant renvoie éventuel
+		a.name ='truc';
+		//$('div').text(a.name);
+		$('div').append("guid=" + a.$id$.id);
+		// $('p').text(JSON.stringify(a));
+		$('p').text("description=" + a.description);
+		console.log(a);
+		
+	};
+	
+    console.log( resp ); // server response
+});
+});
+  </script>
+  </body>
+  </html>
+  
+  
