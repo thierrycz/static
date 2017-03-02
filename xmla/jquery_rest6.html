@@ -1,0 +1,160 @@
+<html>
+<head>
+<title>jquery_rest6</title>
+<script src='/js/jquery-3.1.1.min.js'></script>
+</head>
+<body>
+<h1>req jQuery rest Atlas avec proxy</h1>
+<div></div><br>
+<p>ici</p>
+<!-- sample_aa <br>guid=<input id='f1' value='9e6c4d0d-5fe3-41a9-b9a4-87b7d79f9ef8'> -->
+<br>guid=<input id='f1' value='402821d4-1204-4cf6-81ed-563c457b34f1'>
+
+<br>comment=<input id='f2' value='Hello, World'>
+<br><button id='b1'>go</button>
+
+<script>
+
+// requête sur le proxy php softius ok ;
+// apès désactivation du controle des domaines
+
+
+	var authent = "holger_gov:holger_gov"
+	var proxyUrl = "http://fewh65.dgasi.pole-emploi.intra/xmla/proxy2.php";
+		
+	var atlasHost = "fw1808.dgasi.pole-emploi.intra:21000";
+	var atlasUrl = atlasHost + "/api/atlas/types?type=TRAIT";
+	    atlasUrl = atlasHost + "/api/atlas/discovery/search/dsl?";
+	var	atlasUrlmaj = atlasHost + "/api/atlas/discovery/search/dsl?";
+	var atlasEntities = atlasHost + "/api/atlas/entities/";
+	var	atlasTest = "slzq0b.sii24.pole-emploi.intra:21000/api/atlas/entities/";
+
+	// requête atlas avec un + a la place de l'espace et les quotes échappées
+	var atlasReq = { query: 'hive_table+name=\'sample_aa\'' } ;
+
+	// paramètre pour l'appel au proxy avec l'authentification et la requête de recherche encodée.
+	var proxyParam = { csurl: "http://" + authent + "@" + atlasUrl + $.param(atlasReq) };
+
+	function getEntitie() {
+	var guid = $('input').val();
+	console.log('guid='+guid);
+	proxyParam = { csurl: "http://" + authent + "@" + atlasEntities + guid };
+
+	console.log('proxyParam=' + proxyParam.csurl);
+	console.log('proxyUrl=' + proxyUrl);
+
+	
+	$.getJSON( proxyUrl, proxyParam, function( data ) { 
+	
+	var obj = data.definition;
+	console.log('name='+data.definition.values.name);
+	console.log('desc='+data.definition.values.description);
+	console.log('owner='+data.definition.values.owner);
+	obj.values.description='hello, world';
+	console.log(obj);
+	
+	});
+	
+	};
+	
+	function updateEntitie() {
+	
+	// récupère la valeur dans le champ input
+	var guid = $('#f1').val();
+	console.log('guid='+guid);
+	
+	// récupère le commentaire positionner
+	var description = $('#f2').val();
+	console.log('description='+description);
+	
+	// nom de la property à mettre à jour
+	atlasReq = { property: 'description' }
+	
+	var urlParamPost = "?csurl=http://" + authent + "@" + atlasTest + guid + '?' + $.param(atlasReq);
+		urlParamPost = "?csurl=http://" + authent + "@" + atlasEntities  + guid + '?' + $.param(atlasReq);
+		
+	var urlFinale = proxyUrl + urlParamPost ;
+	
+	proxyParam = description ;
+
+	//console.log('proxyParam=' + proxyParam.csurl);
+	console.log('urlFinale=' + urlFinale);
+
+	// pour le problème de CSRF protection, ajout d'un header avant dans l'appel
+	$.ajaxPrefilter(function (options, originalOptions, jqXHR) {
+		jqXHR.setRequestHeader('X-XSRF-HEADER', 'foo');
+	});
+	
+	
+	$.ajax({
+			method: "POST",
+			url: urlFinale,
+			contentType: 'application/json',
+			dataType:'json',
+			data: proxyParam			
+	}).done(function( data) {
+				console.log(data);
+				});
+	
+	/*
+	$.post(proxyUrl,proxyParam,function (data) {
+	console.log(data);
+	});
+	*/
+	
+	/* $.getJSON( proxyUrl, proxyParam, function( data ) { 
+	
+	var obj = data.definition;
+	console.log('name='+data.definition.values.name);
+	console.log('desc='+data.definition.values.description);
+	console.log('owner='+data.definition.values.owner);
+	obj.values.description='hello, world';
+	console.log(obj);
+	
+	}); */
+	
+	};
+	
+	// traite le résultat de la recherche ;
+	
+	function search(resp) {
+	console.log( 'count=' + resp.count);
+	console.log( 'query=' + resp.query);
+	console.log( 'requestId=' + resp.requestId);
+
+	// boucle sur les résultats de la requête
+	
+	for (iresult in resp.results) {
+		a = resp.results[iresult];
+		console.log("iresult=" + iresult);
+		console.log("a.name=" + a.name);
+		console.log("a.owner=" + a.owner);
+		// modification d'un objet retourné par la requête avant renvoie éventuel
+		a.name ='truc';
+		//$('div').text(a.name);
+		$('div').append("guid=" + a.$id$.id);
+		// $('p').text(JSON.stringify(a));
+		console.log(a);
+		
+	};
+	
+    console.log( resp ); // server response	
+	};
+//end search();
+	
+	
+
+$(document).ready(function() {
+// soumet la requête au proxy php et recupère la réponse en cas de susccès
+
+// $.getJSON( proxyUrl, proxyParam, function( data ) { search( data ); });
+//	getEntitie();
+	$('#b1').click(updateEntitie);
+	// updateEntitie();
+
+});
+  </script>
+  </body>
+  </html>
+  
+  
